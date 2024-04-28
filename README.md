@@ -1,6 +1,12 @@
 # PongClock
 
+![PongClock Demo](./assets/pongclock-demo.gif)
+
 PongClock is a unique clock application that displays the current time using a Pong-style game interface. The clock uses the Pong game mechanics to represent the hours and minutes of the current time.
+
+## Demo
+
+Check out the live demo of PongClock at [pongclock.com](https://pongclock.com).
 
 ## Features
 
@@ -66,5 +72,9 @@ Contributions are welcome! If you have any ideas, suggestions, or bug reports, p
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
+
+## Acknowledgements
+
+- [WebFont Loader](https://github.com/typekit/webfontloader) - Copyright (c) 2010-2017 Adobe Systems Incorporated, Google Incorporated. Licensed under the [Apache License, Version 2.0](https://github.com/typekit/webfontloader/blob/master/LICENSE).
 
 
