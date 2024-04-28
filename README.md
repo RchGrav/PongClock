@@ -38,7 +38,7 @@ git clone https://github.com/RchGrav/PongClock.git
 - Press the \` key (backtick) to toggle the debug screen.
 
 ## Folder Structure
-PongClock/
+```PongClock/
 ├── css/
 │   └── styles.css
 ├── js/
@@ -47,6 +47,7 @@ PongClock/
 │   └── ScoreFont.ttf
 ├── index.html
 └── webfont.js
+```
 
 - The `css` folder contains the CSS file (`styles.css`) for styling the clock interface.
 - The `js` folder contains the JavaScript file (`script.js`) that handles the game logic and time synchronization.
