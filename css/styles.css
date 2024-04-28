@@ -1,0 +1,21 @@
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #000;
+  }
+  canvas {
+    border: 3px solid #000;
+    display: block;
+    background-color: #000;
+  }
+  canvas:focus {
+    outline: none;
+  }
+  @font-face {
+    font-family: 'ScoreFont';
+    src: url('../fonts/ScoreFont.ttf') format('truetype');
+  }
