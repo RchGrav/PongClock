@@ -551,11 +551,12 @@ WebFont.load({
             playerTwo.predictBallPosition(ball);
             playerTwo.draw(ctx);
 
-            // Conditionally render debug info
+            displayWaitMessage();
+            
             if (debugMode) {
                 drawDebugInfo();
             }
-			displayWaitMessage();
+			
             requestAnimationFrame(gameLoop);
         }
 
