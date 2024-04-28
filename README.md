@@ -75,6 +75,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgements
 
-- [WebFont Loader](https://github.com/typekit/webfontloader) - Copyright (c) 2010-2017 Adobe Systems Incorporated, Google Incorporated. Licensed under the [Apache License, Version 2.0](https://github.com/typekit/webfontloader/blob/master/LICENSE).
+- [WebFont Loader](https://github.com/typekit/webfontloader) - Copyright (c) 2010-2017 Adobe Systems Incorporated, Google Incorporated.
+  Licensed under the [Apache License, Version 2.0](https://github.com/typekit/webfontloader/blob/master/LICENSE).
 
 
