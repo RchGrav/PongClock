@@ -12,8 +12,8 @@ Check out the live demo of PongClock at [pongclock.com](https://pongclock.com).
 
 - Displays the current time using a Pong-style game interface
 - The player scores represent the hours and minutes of the current time
-- Authentic player logic simulates realistic paddle movement, creating an engaging gameplay experience
-- The speed of the ball increases with each paddle impact, leading to a dynamic and captivating game of Pong that's hard to take your eyes off of
+- Authentic player logic simulates realistic paddle movement
+- The speed of the ball increases with each paddle impact
 - Responsive design that adapts to different screen sizes
 - Minimal and intuitive user interface
 - Sound effects for a more immersive experience
@@ -75,6 +75,8 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgements
 
-- [WebFont Loader](https://github.com/typekit/webfontloader) - Copyright (c) 2010-2017 Adobe Systems Incorporated, Google Incorporated. Licensed under the [Apache License, Version 2.0](https://github.com/typekit/webfontloader/blob/master/LICENSE).
+[WebFont Loader](https://github.com/typekit/webfontloader)
+Copyright (c) 2010-2017 Adobe Systems Incorporated, Google Incorporated. 
+Licensed under the [Apache License, Version 2.0](https://github.com/typekit/webfontloader/blob/master/LICENSE).
 
 
