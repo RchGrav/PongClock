@@ -256,6 +256,60 @@ WebFont.load({
             }
         }
 
+        // ---------------- Thermo-Trail Parameters ----------------
+        const heatStartFactor = 1.5; // Activate heating above 150% of v0
+        const frictionHeatCoeff = 2;
+        const Tmin = 900;
+        const Tmax = 3000;
+        const trailBase = 70; // milliseconds
+        const trailSkew = 5;
+        const tauMax = 200;
+        const coolRGB = [255, 255, 255];
+
+        const blackBodyLUT = [
+            { T: 900,  rgb: [255, 85, 0] },
+            { T: 1500, rgb: [255, 215, 0] },
+            { T: 2200, rgb: [255, 239, 231] },
+            { T: 2600, rgb: [214, 239, 255] },
+            { T: 3000, rgb: [155, 214, 255] }
+        ];
+
+        function sampleBlackBody(T) {
+            if (T <= blackBodyLUT[0].T) return blackBodyLUT[0].rgb;
+            for (let i = 0; i < blackBodyLUT.length - 1; i++) {
+                const a = blackBodyLUT[i];
+                const b = blackBodyLUT[i + 1];
+                if (T <= b.T) {
+                    const t = (T - a.T) / (b.T - a.T);
+                    return [
+                        Math.round(a.rgb[0] + t * (b.rgb[0] - a.rgb[0])),
+                        Math.round(a.rgb[1] + t * (b.rgb[1] - a.rgb[1])),
+                        Math.round(a.rgb[2] + t * (b.rgb[2] - a.rgb[2]))
+                    ];
+                }
+            }
+            return blackBodyLUT[blackBodyLUT.length - 1].rgb;
+        }
+
+        function computeHeat(ball) {
+            const v = Math.hypot(ball.velocityX, ball.velocityY);
+            const excess = Math.max(0, v - heatStartFactor * ball.v0);
+            const norm = Math.max(0, Math.min(1, excess / (ball.vMax - heatStartFactor * ball.v0)));
+            const theta = Math.pow(norm, frictionHeatCoeff);
+            const T = Tmin + (Tmax - Tmin) * theta;
+            const rgb = sampleBlackBody(T);
+            const tau = trailBase / (1 + trailSkew * theta);
+            return { theta, T, rgb, tau };
+        }
+
+        let trail = [];
+
+        function updateTrail(dt, heatState, x, y) {
+            trail.forEach(vx => { vx.age += dt; });
+            trail.push({ x, y, age: 0 });
+            trail = trail.filter(vx => vx.age < tauMax);
+        }
+
         let lastPlayer;
         class Paddle {
             constructor(x, canvasHeight, isRight = false, controlMode = 0) {
@@ -374,8 +428,11 @@ WebFont.load({
                 this.speed = 0; // Initialize speed
                 this.speedIncrement = 0; // Initialize speed increment
                 this.speedCap = 0; // Initialize speed cap
-                this.reset();
                 this.adjustSpeedForMobile();
+                // Store design speed and max speed for heat calculations
+                this.v0 = this.speed;
+                this.vMax = this.speedCap;
+                this.reset();
             }
 
             adjustSpeedForMobile() {
@@ -393,7 +450,6 @@ WebFont.load({
             reset() {
                 this.x = this.canvasWidth / 2;
                 this.y = this.canvasHeight / 2;
-                this.adjustSpeedForMobile();
                 this.radius = 10;
                 this.velocityX = this.speed * (Math.random() > 0.5 ? 1 : -1);
                 this.velocityY = this.speed * (Math.random() > 0.5 ? 1 : -1);
@@ -485,8 +541,6 @@ WebFont.load({
         const playerOne = new Paddle(10, canvas.height, false);
         const playerTwo = new Paddle(canvas.width - 10, canvas.height, true);
         const ball = new Ball(canvas.width, canvas.height, audioContext);
-        let previousBallX = 0;
-        let previousBallY = 0;
         let player1Score = 0;
         let player2Score = 0;
 
@@ -494,32 +548,25 @@ WebFont.load({
         playerTwo.adjustPosition(canvas.width);
         ball.adjustPosition(canvas.width, canvas.height);
 
-        requestAnimationFrame(gameLoop); // Start the game loop
-
-
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas(); // To set initial sizes and positions
 
-        function gameLoop() {
-            // Removed ctx.clearRect to allow drawing over the previous frame
-            let paddles = [playerTwo, playerOne];
-            const {
-                hours,
-                minutes,
-                seconds
-            } = getCurrentTime();
-            // This fills the canvas with a semi-transparent black to create fading trails
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        let lastTime = null;
+
+        function gameLoop(timestamp) {
+            if (lastTime === null) lastTime = timestamp;
+            const dt = timestamp - lastTime;
+            lastTime = timestamp;
+
+            ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            if (debugMode) {
-                drawDebugInfo();
-            }
-            if (player1Score > 23) {
-                player1Score = 0;
-            }
-            if (player2Score > 59) {
-                player2Score = 0;
-            }
+
+            let paddles = [playerTwo, playerOne];
+            const { hours, minutes, seconds } = getCurrentTime();
+
+            if (player1Score > 23) player1Score = 0;
+            if (player2Score > 59) player2Score = 0;
+
             const boxWidth = 10;
             const boxHeight = 10;
             const numBoxes = Math.floor(canvas.height / (boxHeight * 2));
@@ -527,6 +574,7 @@ WebFont.load({
                 ctx.fillStyle = '#FFF';
                 ctx.fillRect(canvas.width / 2 - boxWidth / 2, i * boxHeight * 2, boxWidth, boxHeight);
             }
+
             ctx.font = '70px ScoreFont';
             ctx.fillStyle = '#FFF';
             ctx.textAlign = 'center';
@@ -535,15 +583,24 @@ WebFont.load({
             ctx.fillText(player1Score.toString().padStart(2, '0'), (canvas.width * 0.29), 80);
             ctx.fillText(player2Score.toString().padStart(2, '0'), (canvas.width * 0.74), 80);
             ctx.restore();
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-            ctx.fillRect(previousBallX - ball.radius, previousBallY - ball.radius, ball.radius * 2, ball.radius * 2);
 
-            ctx.fillStyle = '#FFF';
-            ctx.fillRect(ball.x - ball.radius, ball.y - ball.radius, ball.radius * 2, ball.radius * 2);
-            previousBallX = ball.x;
-            previousBallY = ball.y;
             ball.update([playerOne, playerTwo]);
-            ball.draw(ctx);
+            const heat = computeHeat(ball);
+            updateTrail(dt, heat, ball.x, ball.y);
+
+            trail.forEach(vx => {
+                const fade = Math.exp(-vx.age / heat.tau);
+                const mix = vx.age / tauMax;
+                const r = Math.round(heat.rgb[0] * (1 - mix) + coolRGB[0] * mix);
+                const g = Math.round(heat.rgb[1] * (1 - mix) + coolRGB[1] * mix);
+                const b = Math.round(heat.rgb[2] * (1 - mix) + coolRGB[2] * mix);
+                ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${fade})`;
+                ctx.fillRect(vx.x - ball.radius, vx.y - ball.radius, ball.radius * 2, ball.radius * 2);
+            });
+
+            ctx.fillStyle = `rgb(${heat.rgb[0]}, ${heat.rgb[1]}, ${heat.rgb[2]})`;
+            ctx.fillRect(ball.x - ball.radius, ball.y - ball.radius, ball.radius * 2, ball.radius * 2);
+
             playerOne.updateControlMode(hours, minutes, seconds, player1Score, player2Score);
             playerTwo.updateControlMode(hours, minutes, seconds, player1Score, player2Score);
             playerOne.predictBallPosition(ball);
@@ -552,11 +609,11 @@ WebFont.load({
             playerTwo.draw(ctx);
 
             displayWaitMessage();
-            
+
             if (debugMode) {
                 drawDebugInfo();
             }
-			
+
             requestAnimationFrame(gameLoop);
         }
 
